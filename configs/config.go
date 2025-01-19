@@ -12,6 +12,10 @@ type Config struct {
     DBUser     string
     DBPassword string
     DBName     string
+    TurvoAPIKey   string
+    ClientName    string
+    ClientSecret  string
+    IsSandbox     bool
 }
 
 func LoadConfig() (*Config, error) {
@@ -29,6 +33,10 @@ func LoadConfig() (*Config, error) {
         DBUser:     getEnv("DB_USER", "postgres"),
         DBPassword: getEnv("DB_PASSWORD", ""),
         DBName:     getEnv("DB_NAME", "freight_broker"),
+        TurvoAPIKey:   getEnv("TURVO_API_KEY", ""),
+        ClientName:    getEnv("CLIENT_NAME", ""),
+        ClientSecret:  getEnv("CLIENT_SECRET", ""),
+        IsSandbox:     getEnv("ENVIRONMENT", "sandbox") == "sandbox",
     }, nil
 }
 
