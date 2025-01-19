@@ -9,6 +9,4 @@ type LoadService interface {
     CreateLoad(ctx context.Context, req *dto.CreateLoadRequest) (*dto.LoadResponse, error)
     GetLoad(ctx context.Context, id string) (*dto.LoadResponse, error)
     ListLoads(ctx context.Context, page, pageSize int) (*dto.ListLoadsResponse, error)
-    UpdateLoad(ctx context.Context, id string, req *dto.CreateLoadRequest) (*dto.LoadResponse, error)
-    DeleteLoad(ctx context.Context, id string) error
 }

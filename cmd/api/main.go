@@ -46,6 +46,7 @@ func main() {
         ClientSecret: config.ClientSecret,
         IsSandbox:    config.IsSandbox,
     })
+    loadService := services.NewLoadService(db, tmsService)
 
     // Initial authentication
     if err := tmsService.Authenticate(context.Background()); err != nil {
@@ -53,7 +54,7 @@ func main() {
     }
 
     // Initialize controllers
-    loadController := controllers.NewLoadController(db, tmsService)
+    loadController := controllers.NewLoadController(loadService, tmsService)
 
     // Setup Gin router
     gin.SetMode(getGinMode())
@@ -80,8 +81,6 @@ func main() {
             loads.POST("/", loadController.CreateLoad)
             loads.GET("/", loadController.ListLoads)
             loads.GET("/:id", loadController.GetLoad)
-            loads.PUT("/:id", loadController.UpdateLoad)
-            loads.DELETE("/:id", loadController.DeleteLoad)
         }
     }
 
