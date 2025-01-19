@@ -1,0 +1,122 @@
+{
+    "customers": [
+        {
+            "name": "ABC Logistics",
+            "customerId": "CUST001",
+            "accountType": "Regular",
+            "email": "contact@abclogistics.com",
+            "phone": "555-0101",
+            "contactName": "John Smith",
+            "address": {
+                "street1": "123 Main St",
+                "city": "Chicago",
+                "state": "IL",
+                "postalCode": "60601",
+                "country": "USA"
+            }
+        },
+        {
+            "name": "XYZ Transport",
+            "customerId": "CUST002",
+            "accountType": "Premium",
+            "email": "orders@xyztransport.com",
+            "phone": "555-0102",
+            "contactName": "Jane Doe",
+            "address": {
+                "street1": "456 Market St",
+                "city": "Los Angeles",
+                "state": "CA",
+                "postalCode": "90012",
+                "country": "USA"
+            }
+        }
+    ],
+    "billTo": [
+        {
+            "name": "ABC Logistics Billing",
+            "accountId": "BILL001",
+            "email": "billing@abclogistics.com",
+            "phone": "555-0103",
+            "contactName": "Mary Johnson",
+            "paymentTerms": "Net 30",
+            "address": {
+                "street1": "123 Main St",
+                "city": "Chicago",
+                "state": "IL",
+                "postalCode": "60601",
+                "country": "USA"
+            }
+        },
+        {
+            "name": "XYZ Transport Finance",
+            "accountId": "BILL002",
+            "email": "finance@xyztransport.com",
+            "phone": "555-0104",
+            "contactName": "Bob Wilson",
+            "paymentTerms": "Net 45",
+            "address": {
+                "street1": "456 Market St",
+                "city": "Los Angeles",
+                "state": "CA",
+                "postalCode": "90012",
+                "country": "USA"
+            }
+        }
+    ],
+    "carriers": [
+        {
+            "name": "FastFreight Carriers",
+            "carrierId": "CARR001",
+            "dotNumber": "12345678",
+            "email": "dispatch@fastfreight.com",
+            "phone": "555-0105",
+            "contactName": "Mike Brown",
+            "equipment": "53' Dry Van",
+            "driver": {
+                "name": "Dave Smith",
+                "phone": "555-0106",
+                "email": "dave@fastfreight.com",
+                "driverId": "DRV001"
+            }
+        },
+        {
+            "name": "Reliable Transport",
+            "carrierId": "CARR002",
+            "dotNumber": "87654321",
+            "email": "dispatch@reliable.com",
+            "phone": "555-0107",
+            "contactName": "Sarah Davis",
+            "equipment": "48' Reefer",
+            "driver": {
+                "name": "Tom Wilson",
+                "phone": "555-0108",
+                "email": "tom@reliable.com",
+                "driverId": "DRV002"
+            }
+        }
+    ],
+    "specifications": [
+        {
+            "equipment": "53' Dry Van",
+            "trailerType": "Dry Van",
+            "trailerLength": 53,
+            "refrigerated": false,
+            "loadType": "full",
+            "hazmat": false,
+            "teamRequired": false,
+            "specialNeeds": ["Liftgate"]
+        },
+        {
+            "equipment": "48' Reefer",
+            "trailerType": "Reefer",
+            "trailerLength": 48,
+            "refrigerated": true,
+            "temperature": 34,
+            "tempUnit": "F",
+            "loadType": "full",
+            "hazmat": false,
+            "teamRequired": true,
+            "specialNeeds": ["Temperature Controlled", "Team Drivers"]
+        }
+    ]
+}

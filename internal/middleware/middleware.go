@@ -7,7 +7,6 @@ import (
     "github.com/gin-gonic/gin"
 )
 
-// ErrorResponse represents a standard error response
 type ErrorResponse struct {
     Code    int    `json:"code"`
     Message string `json:"message"`
