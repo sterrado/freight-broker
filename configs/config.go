@@ -16,6 +16,7 @@ type Config struct {
     ClientName    string
     ClientSecret  string
     IsSandbox     bool
+    JWTSecret     string
 }
 
 func LoadConfig() (*Config, error) {
@@ -37,6 +38,7 @@ func LoadConfig() (*Config, error) {
         ClientName:    getEnv("CLIENT_NAME", ""),
         ClientSecret:  getEnv("CLIENT_SECRET", ""),
         IsSandbox:     getEnv("ENVIRONMENT", "sandbox") == "sandbox",
+        JWTSecret:     getEnv("JWT_SECRET", ""),
     }, nil
 }
 

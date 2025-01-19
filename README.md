@@ -79,36 +79,83 @@ freight-broker/
 │   ├── services/       # Business logic
 │   ├── controllers/    # HTTP handlers
 │   ├── interfaces/     # Interfaces for external services
+│   ├── middleware/     # Middleware components
 │   ├── dto/            # Data Transfer Objects
-│   └── repository/     # Database operations
-├── pkg/
-│   └── tms/           # TMS integration packages
 └── configs/           # Configuration files
 ```
 
-## API Documentation
+## Authentication
 
-(TBD - Add API endpoints and usage examples)
+The application uses JWT (JSON Web Token) for API authentication. To use the API:
 
-## Development
-
-### Running Tests
+1. Obtain a JWT token by calling the login endpoint:
 ```bash
-make test
-# or without make:
-go test -v ./...
+POST /api/auth/login
+Content-Type: application/json
+
+{
+    "username": "your-username",
+    "password": "your-password"
+}
 ```
 
-### Adding New TMS Provider
+2. Use the token in subsequent requests:
+```bash
+GET /api/loads
+Authorization: Bearer <your-jwt-token>
+```
 
-1. Implement the TMSProvider interface in `internal/interfaces/tms.go`
-2. Create a new provider in `pkg/tms/`
-3. Update the configuration to support the new provider
+### Protected Endpoints
+All API endpoints except `/api/auth/login` require a valid JWT token in the Authorization header.
+
+## API Documentation
+
+### Authentication Endpoints
+
+#### Login
+```
+POST /api/auth/login
+Content-Type: application/json
+
+Request:
+{
+    "username": "string",
+    "password": "string"
+}
+
+Response:
+{
+    "token": "string"
+}
+```
+
+### Load Management Endpoints
+
+All load management endpoints require authentication.
+
+#### Create Load
+```
+POST /api/loads
+Authorization: Bearer <token>
+Content-Type: application/json
+
+Request: {
+    // Load details
+}
+```
+
+#### List Loads
+```
+GET /api/loads?page=1&size=10
+Authorization: Bearer <token>
+```
+
+#### Get Load
+```
+GET /api/loads/:id
+Authorization: Bearer <token>
+```
 
 ## Environment Variables
 
-- `DB_HOST`: PostgreSQL host
-- `DB_PORT`: PostgreSQL port
-- `DB_USER`: Database user
-- `DB_PASSWORD`: Database password
-- `DB_NAME`: Database name
+Use .env.example to create an .env file and replace the values.

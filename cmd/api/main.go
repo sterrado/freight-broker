@@ -40,6 +40,7 @@ func main() {
     }
 
     // Initialize services
+    authService := services.NewAuthService(config.JWTSecret)
     tmsService := services.NewTurvoService(services.TMSServiceConfig{
         APIKey:       config.TurvoAPIKey,
         ClientID:     config.ClientName,
@@ -54,6 +55,7 @@ func main() {
     }
 
     // Initialize controllers
+    authController := controllers.NewAuthController(authService)
     loadController := controllers.NewLoadController(loadService, tmsService)
 
     // Setup Gin router
@@ -73,16 +75,25 @@ func main() {
     // Setup API routes
     api := r.Group("/api")
     {
-        // Apply TMS token middleware to all API routes
-        api.Use(middleware.TokenMiddleware(tmsService))
-
-        loads := api.Group("/loads")
+        // Public routes
+        auth := api.Group("/auth")
         {
-            loads.POST("/", loadController.CreateLoad)
-            loads.GET("/", loadController.ListLoads)
-            loads.GET("/:id", loadController.GetLoad)
+            auth.POST("/login", authController.Login)
+        }
+
+        // Protected routes
+        protected := api.Group("")
+        protected.Use(middleware.JWTAuthMiddleware(authService))
+        {
+            loads := protected.Group("/loads")
+            {
+                loads.POST("/", loadController.CreateLoad)
+                loads.GET("/", loadController.ListLoads)
+                loads.GET("/:id", loadController.GetLoad)
+            }
         }
     }
+
 
     // Configure server
     srv := &http.Server{
