@@ -12,7 +12,7 @@ A Go-based freight broker application for managing loads through various TMS (Tr
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/sterrado/freight-broker.git
 cd freight-broker
 ```
 
@@ -67,22 +67,58 @@ go mod download
 go run cmd/api/main.go
 ```
 
+### Frontend Setup
+
+1. Navigate to the frontend directory:
+```bash
+cd frontend
+```
+
+2. Install dependencies:
+```bash
+npm install
+# or using yarn:
+yarn install
+```
+
+3. Create a .env file for the frontend:
+```bash
+echo "REACT_APP_API_BASE_URL=http://localhost:8080/api" > .env
+```
+
+4. Start the development server:
+```bash
+npm start
+# or using yarn:
+yarn start
+```
+
+The frontend will be available at http://localhost:3000
+
 ## Project Structure
 
 ```
 freight-broker/
-├── cmd/
-│   └── api/            # Application entrypoint
-├── configs/            # Configuration
-├── internal/
-│   ├── models/         # Database models
-│   ├── services/       # Business logic
-│   ├── controllers/    # HTTP handlers
-│   ├── interfaces/     # Interfaces for external services
-│   ├── middleware/     # Middleware components
-│   ├── dto/            # Data Transfer Objects
-└── configs/           # Configuration files
+├── frontend/           # React frontend application
+│   ├── src/           # Frontend source code
+│   ├── public/        # Static assets
+│   └── package.json   # Frontend dependencies
+└── backend/           # Go backend application
+    ├── cmd/
+    │   └── api/       # Application entrypoint
+    ├── configs/       # Configuration files
+    └── internal/      # Internal packages
+        ├── models/    # Database models
+        ├── services/  # Business logic
+        ├── controllers/   # HTTP handlers
+        ├── interfaces/    # Interfaces for external services
+        ├── middleware/    # Middleware components
+        └── dto/          # Data Transfer Objects
 ```
+
+The project is organized into two main directories:
+- `frontend/`: Contains the React application
+- `backend/`: Contains the Go API server with all its components
 
 ## Authentication
 
