@@ -3,7 +3,7 @@ package middleware
 import (
     "net/http"
     "strings"
-    "freight-broker/internal/services"
+    "freight-broker/backend/internal/services"
     "github.com/gin-gonic/gin"
 )
 

@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"freight-broker/internal/dto/tms"
+	"freight-broker/backend/internal/dto/tms"
 )
 
 const (

@@ -2,7 +2,7 @@ package interfaces
 
 import (
     "context"
-    "freight-broker/internal/dto/tms"
+    "freight-broker/backend/internal/dto/tms"
 )
 
 type TMSService interface {

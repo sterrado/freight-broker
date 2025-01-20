@@ -2,7 +2,7 @@ package interfaces
 
 import (
     "context"
-    "freight-broker/internal/dto"
+    "freight-broker/backend/internal/dto"
 )
 
 type LoadService interface {

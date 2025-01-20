@@ -3,9 +3,9 @@ package services
 import (
 	"context"
 	"fmt"
-	"freight-broker/internal/dto"
-	"freight-broker/internal/interfaces"
-	"freight-broker/internal/models"
+	"freight-broker/backend/internal/dto"
+	"freight-broker/backend/internal/interfaces"
+	"freight-broker/backend/internal/models"
 	"time"
 
 	"github.com/google/uuid"

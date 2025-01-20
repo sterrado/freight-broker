@@ -5,7 +5,7 @@ package controllers
 import (
     "net/http"
     "github.com/gin-gonic/gin"
-	"freight-broker/internal/services"
+	"freight-broker/backend/internal/services"
 )
 
 type AuthController struct {

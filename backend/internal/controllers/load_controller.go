@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"fmt"
-	"freight-broker/internal/dto"
-	tmsDTO "freight-broker/internal/dto/tms"
-	"freight-broker/internal/interfaces"
+	"freight-broker/backend/internal/dto"
+	tmsDTO "freight-broker/backend/internal/dto/tms"
+	"freight-broker/backend/internal/interfaces"
 	"log"
 	"net/http"
 	"strconv"
