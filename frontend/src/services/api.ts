@@ -1,20 +1,23 @@
-// src/services/api.ts
-
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { Load, LoadsResponse } from '../types/load.types';
 
-const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL,
-});
+const createApiInstance = (): AxiosInstance => {
+  const instance = axios.create({
+    baseURL: process.env.REACT_APP_API_BASE_URL,
+  });
 
-// Add auth token to all requests
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+  instance.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  });
+
+  return instance;
+};
+
+const api = createApiInstance();
 
 export const authService = {
   login: async () => {

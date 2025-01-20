@@ -25,7 +25,6 @@ func NewLoadService(db *gorm.DB, tmsService interfaces.TMSService) *LoadService 
 }
 
 func (s *LoadService) CreateLoad(ctx context.Context, req *dto.CreateLoadRequest) (*dto.LoadResponse, error) {
-    // Create load in our database
     load := &models.Load{
         ID:               uuid.New(),
         ExternalTMSLoadID: req.ExternalTMSLoadID,
@@ -59,7 +58,6 @@ func (s *LoadService) CreateLoad(ctx context.Context, req *dto.CreateLoadRequest
         return nil, fmt.Errorf("failed to create load: %w", err)
     }
 
-    // Convert to response DTO
     return s.convertToLoadResponse(load)
 }
 
@@ -82,17 +80,14 @@ func (s *LoadService) ListLoads(ctx context.Context, page, pageSize int) (*dto.L
 
     offset := (page - 1) * pageSize
 
-    // Get total count
     if err := s.db.Model(&models.Load{}).Count(&total).Error; err != nil {
         return nil, fmt.Errorf("failed to count loads: %w", err)
     }
 
-    // Get loads with pagination
     if err := s.db.Offset(offset).Limit(pageSize).Find(&loads).Error; err != nil {
         return nil, fmt.Errorf("failed to list loads: %w", err)
     }
 
-    // Convert to response DTOs
     loadResponses := make([]dto.LoadResponse, len(loads))
     for i, load := range loads {
         response, err := s.convertToLoadResponse(&load)
@@ -110,7 +105,6 @@ func (s *LoadService) ListLoads(ctx context.Context, page, pageSize int) (*dto.L
 
 // Helper function to convert model to DTO
 func (s *LoadService) convertToLoadResponse(load *models.Load) (*dto.LoadResponse, error) {
-    // Get the status code from the JSON map
     statusCode := load.Status["code"].(map[string]interface{})
     
     return &dto.LoadResponse{

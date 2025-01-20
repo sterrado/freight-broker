@@ -1,6 +1,5 @@
 package dto
 
-// CreateLoadRequest represents the incoming request to create a load
 type CreateLoadRequest struct {
     ExternalTMSLoadID string                 `json:"externalTMSLoadID"`
     FreightLoadID     string                 `json:"freightLoadID"`
@@ -33,7 +32,6 @@ type StatusCodeDTO struct {
     Value string `json:"value"`
 }
 
-// LoadResponse represents the response structure for a load
 type LoadResponse struct {
     ID               string                 `json:"id"`
     ExternalTMSLoadID string                 `json:"externalTMSLoadID"`
@@ -58,7 +56,6 @@ type LoadResponse struct {
     UpdatedAt       string                `json:"updatedAt"`
 }
 
-// ListLoadsResponse represents the response for listing loads
 type ListLoadsResponse struct {
     Loads []LoadResponse `json:"loads"`
     Total int64         `json:"total"`

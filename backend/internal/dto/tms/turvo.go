@@ -49,7 +49,6 @@ type CustomerOrder struct {
     Customer             CustomerInfo `json:"customer"`
 }
 
-// Minimal TMS shipment request with only required fields
 type CreateShipmentRequest struct {
     LTLShipment   bool            `json:"ltlShipment"`
     StartDate     DateInfo        `json:"startDate"`

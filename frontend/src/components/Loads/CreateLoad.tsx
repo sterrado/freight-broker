@@ -1,5 +1,3 @@
-//src/components/Loads/CreateLoad.tsx
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {

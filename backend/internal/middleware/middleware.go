@@ -14,6 +14,10 @@ type ErrorResponse struct {
 
 func JWTAuthMiddleware(authService *services.AuthService) gin.HandlerFunc {
     return func(c *gin.Context) {
+        if c.Request.Method == "OPTIONS" {
+            c.Next()
+            return
+        }
         authHeader := c.GetHeader("Authorization")
         if authHeader == "" {
             c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization header required"})
@@ -35,7 +39,6 @@ func JWTAuthMiddleware(authService *services.AuthService) gin.HandlerFunc {
             return
         }
 
-        // Store user information in context
         c.Set("userID", claims.UserID)
         c.Set("username", claims.Username)
         c.Set("role", claims.Role)
@@ -44,16 +47,13 @@ func JWTAuthMiddleware(authService *services.AuthService) gin.HandlerFunc {
     }
 }
 
-// ErrorHandler middleware handles all errors in a consistent way
 func ErrorHandler() gin.HandlerFunc {
     return func(c *gin.Context) {
         c.Next()
 
-        // Only handle errors if there are any
         if len(c.Errors) > 0 {
             err := c.Errors.Last()
             
-            // You can add custom error types and handle them differently
             switch e := err.Err.(type) {
             case *CustomError:
                 c.JSON(e.StatusCode, ErrorResponse{
@@ -71,7 +71,6 @@ func ErrorHandler() gin.HandlerFunc {
     }
 }
 
-// CustomError for handling specific error cases
 type CustomError struct {
     StatusCode int
     Message    string

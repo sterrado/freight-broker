@@ -40,7 +40,6 @@ func (c *AuthController) Login(ctx *gin.Context) {
         return
     }
 
-    // Generate JWT token
     token, err := c.authService.GenerateToken("user123", req.Username, "broker")
     if err != nil {
         ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to generate token"})

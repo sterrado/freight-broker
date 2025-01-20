@@ -27,6 +27,10 @@ func NewLoadController(loadService interfaces.LoadService, tmsService interfaces
 }
 
 func (c *LoadController) CreateLoad(ctx *gin.Context) {
+
+    ctx.Header("Access-Control-Allow-Origin", "*")
+    ctx.Header("Access-Control-Allow-Methods", "GET, OPTIONS")
+    ctx.Header("Access-Control-Allow-Headers", "Origin, Authorization, Content-Type")
     var req dto.CreateLoadRequest
 
     if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -37,7 +41,6 @@ func (c *LoadController) CreateLoad(ctx *gin.Context) {
         return
     }
 
-    // Validate required nested structures
     if err := c.validateCreateLoadRequest(&req); err != nil {
         ctx.JSON(http.StatusBadRequest, gin.H{
             "error": "Validation failed",
@@ -46,7 +49,6 @@ func (c *LoadController) CreateLoad(ctx *gin.Context) {
         return
     }
 
-    // Ensure TMS is authenticated
     if !c.tmsService.IsTokenValid() {
         if err := c.tmsService.Authenticate(ctx); err != nil {
             ctx.JSON(http.StatusServiceUnavailable, gin.H{
@@ -57,11 +59,12 @@ func (c *LoadController) CreateLoad(ctx *gin.Context) {
         }
     }
 
-    // Try to convert to shipment request
     shipmentReq := c.convertToShipmentRequest(&req)
 
-    // Create shipment in TMS
     _, err := c.tmsService.CreateShipment(ctx, shipmentReq)
+    
+    //bypassing error validation currently because of strange error response
+
     // if err != nil {
     //     ctx.JSON(http.StatusServiceUnavailable, gin.H{
     //         "error": "Failed to create shipment in TMS",
@@ -71,9 +74,7 @@ func (c *LoadController) CreateLoad(ctx *gin.Context) {
     // }
     log.Print(err)
 
-    // Update the request with the TMS ID
 
-    // Create load in local database
     loadResp, err := c.loadService.CreateLoad(ctx, &req)
     if err != nil {
         ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -87,10 +88,11 @@ func (c *LoadController) CreateLoad(ctx *gin.Context) {
 }
 
 func (c *LoadController) GetLoad(ctx *gin.Context) {
-    // Get load ID from URL parameter
+    ctx.Header("Access-Control-Allow-Origin", "*")
+    ctx.Header("Access-Control-Allow-Methods", "GET, OPTIONS")
+    ctx.Header("Access-Control-Allow-Headers", "Origin, Authorization, Content-Type")
     id := ctx.Param("id")
 
-    // Validate UUID format
     if _, err := uuid.Parse(id); err != nil {
         ctx.JSON(http.StatusBadRequest, gin.H{
             "error": "Invalid load ID format",
@@ -99,7 +101,6 @@ func (c *LoadController) GetLoad(ctx *gin.Context) {
         return
     }
 
-    // Get load from service
     loadResp, err := c.loadService.GetLoad(ctx, id)
     if err != nil {
         if err.Error() == "load not found" {
@@ -121,11 +122,12 @@ func (c *LoadController) GetLoad(ctx *gin.Context) {
 }
 
 func (c *LoadController) ListLoads(ctx *gin.Context) {
-    // Get pagination parameters from query string
+    ctx.Header("Access-Control-Allow-Origin", "*")
+    ctx.Header("Access-Control-Allow-Methods", "GET, OPTIONS")
+    ctx.Header("Access-Control-Allow-Headers", "Origin, Authorization, Content-Type")
     pageStr := ctx.DefaultQuery("page", "1")
     pageSizeStr := ctx.DefaultQuery("size", "10")
 
-    // Convert and validate pagination parameters
     page, err := strconv.Atoi(pageStr)
     if err != nil || page < 1 {
         ctx.JSON(http.StatusBadRequest, gin.H{
@@ -144,7 +146,6 @@ func (c *LoadController) ListLoads(ctx *gin.Context) {
         return
     }
 
-    // Get loads from service
     loadsResp, err := c.loadService.ListLoads(ctx, page, pageSize)
     if err != nil {
         ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -154,7 +155,6 @@ func (c *LoadController) ListLoads(ctx *gin.Context) {
         return
     }
 
-    // Add pagination info to response
     loadsResp.Page = page
     loadsResp.Size = pageSize
 
@@ -163,7 +163,6 @@ func (c *LoadController) ListLoads(ctx *gin.Context) {
 
 
 func (c *LoadController) validateCreateLoadRequest(req *dto.CreateLoadRequest) error {
-    // Add validation logic based on your business rules
     if req.FreightLoadID == "" {
         return fmt.Errorf("freight load ID is required")
     }
@@ -176,20 +175,16 @@ func (c *LoadController) validateCreateLoadRequest(req *dto.CreateLoadRequest) e
     if req.Consignee == nil {
         return fmt.Errorf("consignee information is required")
     }
-    // Add more validation as needed
     return nil
 }
 
 func (c *LoadController) convertToShipmentRequest(req *dto.CreateLoadRequest) tmsDTO.CreateShipmentRequest {
-    // Parse scheduled times
     pickupTime, _ := time.Parse(time.RFC3339, req.Pickup["scheduledTime"].(string))
     deliveryTime, _ := time.Parse(time.RFC3339, req.Consignee["scheduledTime"].(string))
 
-    // Get locations
     pickupLocation := req.Pickup["address"].(map[string]interface{})
     consigneeLocation := req.Consignee["address"].(map[string]interface{})
 
-    // Convert status from load DTO to TMS DTO
     status := tmsDTO.Status{
         Code: tmsDTO.StatusCode{
             Key:   req.Status.Code.Key,

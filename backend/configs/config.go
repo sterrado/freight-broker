@@ -22,10 +22,8 @@ type Config struct {
 }
 
 func LoadConfig() (*Config, error) {
-    // Only load .env file if not in production
     if os.Getenv("GO_ENV") != "production" {
         if err := godotenv.Load(); err != nil {
-            // Don't return error as .env file is optional
             fmt.Println("Warning: .env file not found")
         }
     }

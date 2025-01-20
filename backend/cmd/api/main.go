@@ -17,11 +17,11 @@ import (
     "freight-broker/backend/internal/middleware"
     "github.com/gin-gonic/gin"
     "github.com/jinzhu/gorm"
+    "github.com/gin-contrib/cors"
     _ "github.com/lib/pq"
 )
 
 func main() {
-    // Load configuration
     config, err := configs.LoadConfig()
     if err != nil {
         log.Fatalf("Failed to load config: %v", err)
@@ -34,19 +34,10 @@ func main() {
     }
     defer db.Close()
 
-    // Auto-migrate database models
     if err := setupModels(db); err != nil {
         log.Fatalf("Failed to setup database models: %v", err)
     }
 
-    // Add this before creating tmsService
-    log.Printf("TMS Config: APIKey present=%v, ClientID=%s, ClientSecret present=%v, IsSandbox=%v",
-    config.TurvoAPIKey != "",
-    config.ClientName,
-    config.ClientSecret != "",
-    config.IsSandbox)
-
-    // Initialize services
     authService := services.NewAuthService(config.JWTSecret)
     tmsService := services.NewTurvoService(services.TMSServiceConfig{
         APIKey:       config.TurvoAPIKey,
@@ -58,7 +49,6 @@ func main() {
     })
     loadService := services.NewLoadService(db, tmsService)
 
-    // Initial authentication
     if err := tmsService.Authenticate(context.Background()); err != nil {
         log.Fatalf("Failed to authenticate with Turvo: %v", err)
     }
@@ -67,30 +57,35 @@ func main() {
     authController := controllers.NewAuthController(authService)
     loadController := controllers.NewLoadController(loadService, tmsService)
 
-    // Setup Gin router
     gin.SetMode(getGinMode())
-    r := gin.New() // Use New() instead of Default() for custom middleware
+    r := gin.New()
 
     // Add middleware
+    r.Use(cors.New(cors.Config{
+        AllowOrigins:     []string{"*"},
+        AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+        AllowHeaders:     []string{"Origin", "Authorization", "Content-Type"},
+        ExposeHeaders:    []string{"Content-Length"},
+        AllowCredentials: false,
+        MaxAge:           12 * time.Hour,
+    }))
     r.Use(gin.Recovery())
     r.Use(gin.Logger())
-    r.Use(middleware.ErrorHandler())
     
     // Health check endpoint
     r.GET("/health", func(c *gin.Context) {
         c.JSON(200, gin.H{"status": "healthy"})
     })
+    
+    
 
-    // Setup API routes
     api := r.Group("/api")
     {
-        // Public routes
         auth := api.Group("/auth")
         {
             auth.POST("/login", authController.Login)
         }
 
-        // Protected routes
         protected := api.Group("")
         protected.Use(middleware.JWTAuthMiddleware(authService))
         {
@@ -104,7 +99,6 @@ func main() {
     }
 
 
-    // Configure server
     srv := &http.Server{
         Addr:         ":8080",
         Handler:      r,
@@ -113,14 +107,12 @@ func main() {
         IdleTimeout:  60 * time.Second,
     }
 
-    // Start server in a goroutine
     go func() {
         if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
             log.Fatalf("Failed to start server: %v", err)
         }
     }()
 
-    // Wait for interrupt signal to gracefully shutdown the server
     quit := make(chan os.Signal, 1)
     signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
     <-quit
@@ -145,7 +137,6 @@ func setupDatabase(config *configs.Config) (*gorm.DB, error) {
         return nil, err
     }
 
-    // Set connection pool settings
     db.DB().SetMaxIdleConns(10)
     db.DB().SetMaxOpenConns(100)
     db.DB().SetConnMaxLifetime(time.Hour)
@@ -154,10 +145,8 @@ func setupDatabase(config *configs.Config) (*gorm.DB, error) {
 }
 
 func setupModels(db *gorm.DB) error {
-    // Auto-migrate your models here
     return db.AutoMigrate(
         &models.Load{},
-        // Add other models here
     ).Error
 }
 

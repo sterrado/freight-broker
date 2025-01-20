@@ -52,12 +52,9 @@ func (s *TurvoService) Authenticate(ctx context.Context) error {
 
     authURL := prodAuthURL
     if s.config.IsSandbox {
-        log.Print("HOLA!")
         authURL = sandboxAuthURL
     }
 
-    // Log the URL being used
-    log.Printf("Attempting to authenticate with URL: %s", authURL)
 
     authReq := dto.TurvoAuthRequest{
         GrantType:    "password",
@@ -69,8 +66,6 @@ func (s *TurvoService) Authenticate(ctx context.Context) error {
         Type:         "business",
     }
 
-    // Log the request data (be careful with sensitive info in production)
-    log.Printf("Auth Request Data: %+v", authReq)
 
     jsonBody, err := json.Marshal(authReq)
     if err != nil {
@@ -85,32 +80,21 @@ func (s *TurvoService) Authenticate(ctx context.Context) error {
     req.Header.Set("Content-Type", "application/json")
     req.Header.Set("x-api-key", s.config.APIKey)
 
-    // Log headers (excluding sensitive data)
-    log.Printf("Request Headers: Content-Type=%s", req.Header.Get("Content-Type"))
-    log.Printf("API Key present: %v", s.config.APIKey != "")
-
     resp, err := s.client.Do(req)
     if err != nil {
         return fmt.Errorf("failed to make request: %w", err)
     }
     defer resp.Body.Close()
 
-    // Read the response body
     bodyBytes, err := io.ReadAll(resp.Body)
     if err != nil {
         return fmt.Errorf("failed to read response body: %w", err)
     }
 
-    // Log the complete response for debugging
-    log.Printf("Response Status: %d", resp.StatusCode)
-    log.Printf("Response Headers: %+v", resp.Header)
-    log.Printf("Response Body: %s", string(bodyBytes))
-
     if resp.StatusCode != http.StatusOK {
         return fmt.Errorf("authentication failed with status: %d, body: %s", resp.StatusCode, string(bodyBytes))
     }
 
-    // Create a new reader with the body bytes for JSON decoding
     var authResp dto.TurvoAuthResponse
     if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&authResp); err != nil {
         return fmt.Errorf("failed to decode response: %w", err)
@@ -121,7 +105,6 @@ func (s *TurvoService) Authenticate(ctx context.Context) error {
     s.tokenExpiry = time.Now().Add(time.Second * time.Duration(authResp.ExpiresIn))
     s.mu.Unlock()
 
-    log.Printf("Authentication successful, token expires in %d seconds", authResp.ExpiresIn)
 
     return nil
 }
@@ -134,7 +117,6 @@ func (s *TurvoService) IsTokenValid() bool {
         return false
     }
     
-    // Consider token invalid if it expires in less than 5 minutes
     return time.Now().Add(5 * time.Minute).Before(s.tokenExpiry)
 }
 
@@ -142,7 +124,6 @@ func (s *TurvoService) RefreshToken(ctx context.Context) error {
     return s.Authenticate(ctx)
 }
 
-// GetAuthToken returns the current auth token
 func (s *TurvoService) GetAuthToken() string {
     s.mu.RLock()
     defer s.mu.RUnlock()
@@ -157,7 +138,6 @@ func (s *TurvoService) CreateShipment(ctx context.Context, req dto.CreateShipmen
         return nil, fmt.Errorf("failed to marshal request: %w", err)
     }
     
-    // Log request payload
     log.Printf("Creating shipment with payload: %s", string(jsonData))
 
     httpReq, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
@@ -167,24 +147,17 @@ func (s *TurvoService) CreateShipment(ctx context.Context, req dto.CreateShipmen
 
     s.setAuthHeaders(httpReq)
 
-    log.Printf("Full request headers for shipment creation:")
-    for name, values := range httpReq.Header {
-        log.Printf("%s: %v", name, values)
-    }
-
     resp, err := s.client.Do(httpReq)
     if err != nil {
         return nil, fmt.Errorf("failed to make request: %w", err)
     }
     defer resp.Body.Close()
 
-    // Read response body
     bodyBytes, err := io.ReadAll(resp.Body)
     if err != nil {
         return nil, fmt.Errorf("failed to read response body: %w", err)
     }
     
-    // Log response
     log.Printf("Response status: %d", resp.StatusCode)
     log.Printf("Response body: %s", string(bodyBytes))
 
@@ -195,7 +168,6 @@ func (s *TurvoService) CreateShipment(ctx context.Context, req dto.CreateShipmen
         return nil, fmt.Errorf("API returned status code: %d, body: %s", resp.StatusCode, string(bodyBytes))
     }
 
-    // Create new reader from bytes for JSON decoding
     var shipmentResp dto.ShipmentResponse
     if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&shipmentResp); err != nil {
         return nil, fmt.Errorf("failed to decode response: %w", err)
@@ -282,7 +254,6 @@ func (s *TurvoService) UpdateShipment(ctx context.Context, id string, req dto.Cr
     defer resp.Body.Close()
 
     if resp.StatusCode != http.StatusOK {
-        // Read error response
         var errResp struct {
             Message string `json:"message"`
             Details string `json:"details,omitempty"`
@@ -318,7 +289,6 @@ func (s *TurvoService) DeleteShipment(ctx context.Context, id string) error {
     defer resp.Body.Close()
 
     if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
-        // Read error response
         var errResp struct {
             Message string `json:"message"`
             Details string `json:"details,omitempty"`

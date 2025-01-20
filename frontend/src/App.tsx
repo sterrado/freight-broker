@@ -5,7 +5,6 @@ import { createTheme } from '@mui/material/styles';
 import { Sidebar } from './components/Layout/Sidebar';
 import { MainContent } from './components/Layout/MainContent';
 
-// We'll create these components next
 import { LoadsTable } from './components/Loads/LoadsTable';
 import { LoadDetail } from './components/Loads/LoadDetail';
 import { CreateLoad } from './components/Loads/CreateLoad';
@@ -13,7 +12,9 @@ import { Settings } from './components/Settings/Settings';
 
 const theme = createTheme();
 
+
 function App() {
+
   return (
     <Router>
       <ThemeProvider theme={theme}>
