@@ -40,6 +40,8 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "^22.10.7"
+    "@types/node": "^22.10.7",
+    "@types/react-dom": "^19.0.3",
+    "web-vitals": "^4.2.4"
   }
 }
