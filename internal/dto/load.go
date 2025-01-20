@@ -4,7 +4,7 @@ package dto
 type CreateLoadRequest struct {
     ExternalTMSLoadID string                 `json:"externalTMSLoadID"`
     FreightLoadID     string                 `json:"freightLoadID"`
-    Status           string                 `json:"status"`
+    Status           StatusDTO              `json:"status"`  // Changed from string to StatusDTO
     Customer         map[string]interface{} `json:"customer"`
     BillTo          map[string]interface{} `json:"billTo"`
     Pickup          map[string]interface{} `json:"pickup"`
@@ -22,12 +22,23 @@ type CreateLoadRequest struct {
     RouteMiles      float64               `json:"routeMiles"`
 }
 
+type StatusDTO struct {
+    Code        StatusCodeDTO `json:"code"`
+    Notes       string        `json:"notes"`
+    Description string        `json:"description"`
+}
+
+type StatusCodeDTO struct {
+    Key   string `json:"key"`
+    Value string `json:"value"`
+}
+
 // LoadResponse represents the response structure for a load
 type LoadResponse struct {
     ID               string                 `json:"id"`
     ExternalTMSLoadID string                 `json:"externalTMSLoadID"`
     FreightLoadID     string                 `json:"freightLoadID"`
-    Status           string                 `json:"status"`
+    Status           StatusDTO              `json:"status"`
     Customer         map[string]interface{} `json:"customer"`
     BillTo          map[string]interface{} `json:"billTo"`
     Pickup          map[string]interface{} `json:"pickup"`

@@ -39,6 +39,13 @@ func main() {
         log.Fatalf("Failed to setup database models: %v", err)
     }
 
+    // Add this before creating tmsService
+    log.Printf("TMS Config: APIKey present=%v, ClientID=%s, ClientSecret present=%v, IsSandbox=%v",
+    config.TurvoAPIKey != "",
+    config.ClientName,
+    config.ClientSecret != "",
+    config.IsSandbox)
+
     // Initialize services
     authService := services.NewAuthService(config.JWTSecret)
     tmsService := services.NewTurvoService(services.TMSServiceConfig{
@@ -46,6 +53,8 @@ func main() {
         ClientID:     config.ClientName,
         ClientSecret: config.ClientSecret,
         IsSandbox:    config.IsSandbox,
+        TurvoUsername:  config.TurvoUsername,
+        TurvoPassword:  config.TurvoPassword,
     })
     loadService := services.NewLoadService(db, tmsService)
 

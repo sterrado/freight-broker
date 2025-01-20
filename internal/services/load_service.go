@@ -1,13 +1,15 @@
 package services
 
 import (
-    "context"
-    "fmt"
-    "github.com/google/uuid"
-    "github.com/jinzhu/gorm"
-    "freight-broker/internal/dto"
-    "freight-broker/internal/models"
-    "freight-broker/internal/interfaces"
+	"context"
+	"fmt"
+	"freight-broker/internal/dto"
+	"freight-broker/internal/interfaces"
+	"freight-broker/internal/models"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/jinzhu/gorm"
 )
 
 type LoadService struct {
@@ -28,7 +30,14 @@ func (s *LoadService) CreateLoad(ctx context.Context, req *dto.CreateLoadRequest
         ID:               uuid.New(),
         ExternalTMSLoadID: req.ExternalTMSLoadID,
         FreightLoadID:     req.FreightLoadID,
-        Status:           req.Status,
+        Status:           models.JSON(map[string]interface{}{
+            "code": map[string]interface{}{
+                "key":   req.Status.Code.Key,
+                "value": req.Status.Code.Value,
+            },
+            "notes":       req.Status.Notes,
+            "description": req.Status.Description,
+        }),
         Customer:         models.JSON(req.Customer),
         BillTo:          models.JSON(req.BillTo),
         Pickup:          models.JSON(req.Pickup),
@@ -101,11 +110,21 @@ func (s *LoadService) ListLoads(ctx context.Context, page, pageSize int) (*dto.L
 
 // Helper function to convert model to DTO
 func (s *LoadService) convertToLoadResponse(load *models.Load) (*dto.LoadResponse, error) {
+    // Get the status code from the JSON map
+    statusCode := load.Status["code"].(map[string]interface{})
+    
     return &dto.LoadResponse{
         ID:               load.ID.String(),
         ExternalTMSLoadID: load.ExternalTMSLoadID,
         FreightLoadID:     load.FreightLoadID,
-        Status:           load.Status,
+        Status: dto.StatusDTO{
+            Code: dto.StatusCodeDTO{
+                Key:   statusCode["key"].(string), 
+                Value: statusCode["value"].(string),
+            },
+            Notes:       load.Status["notes"].(string),
+            Description: load.Status["description"].(string),
+        },
         Customer:         load.Customer,
         BillTo:          load.BillTo,
         Pickup:          load.Pickup,
@@ -121,7 +140,7 @@ func (s *LoadService) convertToLoadResponse(load *models.Load) (*dto.LoadRespons
         PoNums:          load.PoNums,
         Operator:        load.Operator,
         RouteMiles:      load.RouteMiles,
-        CreatedAt:       load.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-        UpdatedAt:       load.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+        CreatedAt:       load.CreatedAt.Format(time.RFC3339),
+        UpdatedAt:       load.UpdatedAt.Format(time.RFC3339),
     }, nil
 }
