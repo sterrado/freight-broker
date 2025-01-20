@@ -11,3 +11,8 @@ down:
 
 logs:
 	docker-compose logs -f
+
+reset:
+	docker-compose down -v
+	docker-compose build
+	docker-compose up -d

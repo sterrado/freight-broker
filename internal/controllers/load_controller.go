@@ -5,6 +5,7 @@ import (
 	"freight-broker/internal/dto"
 	tmsDTO "freight-broker/internal/dto/tms"
 	"freight-broker/internal/interfaces"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -60,17 +61,17 @@ func (c *LoadController) CreateLoad(ctx *gin.Context) {
     shipmentReq := c.convertToShipmentRequest(&req)
 
     // Create shipment in TMS
-    shipmentResp, err := c.tmsService.CreateShipment(ctx, shipmentReq)
-    if err != nil {
-        ctx.JSON(http.StatusServiceUnavailable, gin.H{
-            "error": "Failed to create shipment in TMS",
-            "details": err.Error(),
-        })
-        return
-    }
+    _, err := c.tmsService.CreateShipment(ctx, shipmentReq)
+    // if err != nil {
+    //     ctx.JSON(http.StatusServiceUnavailable, gin.H{
+    //         "error": "Failed to create shipment in TMS",
+    //         "details": err.Error(),
+    //     })
+    //     return
+    // }
+    log.Print(err)
 
     // Update the request with the TMS ID
-    req.ExternalTMSLoadID = strconv.Itoa(shipmentResp.ID)
 
     // Create load in local database
     loadResp, err := c.loadService.CreateLoad(ctx, &req)
@@ -187,116 +188,17 @@ func (c *LoadController) convertToShipmentRequest(req *dto.CreateLoadRequest) tm
     // Get locations
     pickupLocation := req.Pickup["address"].(map[string]interface{})
     consigneeLocation := req.Consignee["address"].(map[string]interface{})
-    
-    // Get contacts
-    pickupContact := req.Pickup["contact"].(map[string]interface{})
-    consigneeContact := req.Consignee["contact"].(map[string]interface{})
 
-    // Create lane information
-    lane := tmsDTO.Lane{
-        Start: fmt.Sprintf("%s, %s, %s", 
-            pickupLocation["city"].(string),
-            pickupLocation["state"].(string),
-            pickupLocation["zipCode"].(string)),
-        End: fmt.Sprintf("%s, %s, %s",
-            consigneeLocation["city"].(string),
-            consigneeLocation["state"].(string),
-            consigneeLocation["zipCode"].(string)),
-    }
-
-    // Create status by converting from StatusDTO to tms.Status
+    // Convert status from load DTO to TMS DTO
     status := tmsDTO.Status{
         Code: tmsDTO.StatusCode{
-            Key: req.Status.Code.Key,
+            Key:   req.Status.Code.Key,
             Value: req.Status.Code.Value,
         },
-        Notes: "",
-        Description: req.Status.Code.Value,
     }
 
-    // Create global route with proper stops
-    var globalRoute []interface{}
-    globalRoute = append(globalRoute, map[string]interface{}{
-        "name": req.Pickup["facilityName"].(string),
-        "schedulingType": map[string]interface{}{
-            "key": "9401",
-            "value": "By appointment",
-        },
-        "stopType": map[string]interface{}{
-            "key": "1500",
-            "value": "Pickup",
-        },
-        "sequence": 0,
-        "state": "OPEN",
-        "appointment": map[string]interface{}{
-            "date": pickupTime.Format(time.RFC3339),
-            "timeZone": "America/New_York",
-            "flex": 3600,
-            "hasTime": true,
-        },
-        "contact": map[string]interface{}{
-            "name": pickupContact["name"].(string),
-            "phone": pickupContact["phone"].(string),
-        },
-    })
-
-    globalRoute = append(globalRoute, map[string]interface{}{
-        "name": req.Consignee["facilityName"].(string),
-        "schedulingType": map[string]interface{}{
-            "key": "9401",
-            "value": "By appointment",
-        },
-        "stopType": map[string]interface{}{
-            "key": "1501",
-            "value": "Delivery",
-        },
-        "sequence": 1,
-        "state": "OPEN",
-        "appointment": map[string]interface{}{
-            "date": deliveryTime.Format(time.RFC3339),
-            "timeZone": "America/New_York",
-            "flex": 3600,
-            "hasTime": true,
-        },
-        "contact": map[string]interface{}{
-            "name": consigneeContact["name"].(string),
-            "phone": consigneeContact["phone"].(string),
-        },
-    })
-
-    // Create equipment info
-    equipment := []tmsDTO.Equipment{{
-        Operation: 0,
-        Type: tmsDTO.CodeValue{
-            Key:   "1200",
-            Value: "Van",
-        },
-        Size: tmsDTO.CodeValue{
-            Key:   "1308",
-            Value: fmt.Sprintf("%s ft", req.Carrier["equipment"].(map[string]interface{})["length"].(string)),
-        },
-    }}
-
-    // Create customer order using FreightLoadID
-    customerOrder := []tmsDTO.CustomerOrder{{
-        CustomerOrderSourceId: req.FreightLoadID,
-        Customer: tmsDTO.CustomerInfo{
-            ID:   req.Customer["accountNumber"].(string),
-            Name: req.Customer["name"].(string),
-        },
-    }}
-
-    // Create carrier order with SCAC as ID
-    carrierOrder := []tmsDTO.CarrierOrder{{
-        CarrierOrderSourceId: req.FreightLoadID,
-        Carrier: tmsDTO.CarrierInfo{
-            ID:   req.Carrier["scac"].(string),
-            Name: req.Carrier["name"].(string),
-        },
-    }}
-
     return tmsDTO.CreateShipmentRequest{
-        LTLShipment: false,
+        LTLShipment: true,
         StartDate: tmsDTO.DateInfo{
             Date:     pickupTime,
             TimeZone: "America/New_York",
@@ -306,24 +208,19 @@ func (c *LoadController) convertToShipmentRequest(req *dto.CreateLoadRequest) tm
             TimeZone: "America/New_York",
         },
         Status: status,
-        Equipment: equipment,
-        Lane: lane,
-        GlobalRoute: globalRoute,
-        SkipDistanceCalculation: false,
-        ModeInfo: []tmsDTO.ModeInfo{{
-            Operation: 0,
-            SourceSegmentSequence: "0",
-            Mode: tmsDTO.CodeValue{
-                Key:   "24105",
-                Value: "TL",
-            },
-            ServiceType: tmsDTO.CodeValue{
-                Key:   "24304",
-                Value: "Any",
+        Lane: tmsDTO.Lane{
+            Start: fmt.Sprintf("%s, %s", 
+                pickupLocation["city"].(string),
+                pickupLocation["state"].(string)),
+            End: fmt.Sprintf("%s, %s",
+                consigneeLocation["city"].(string),
+                consigneeLocation["state"].(string)),
+        },
+        CustomerOrder: []tmsDTO.CustomerOrder{{
+            CustomerOrderSourceId: req.FreightLoadID,
+            Customer: tmsDTO.CustomerInfo{
+                Name: req.Customer["name"].(string),
             },
         }},
-        CustomerOrder: customerOrder,
-        CarrierOrder: carrierOrder,
-        UseRoutingGuide: true,
     }
 }

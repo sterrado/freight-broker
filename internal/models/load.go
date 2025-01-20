@@ -3,6 +3,9 @@ package models
 import (
     "github.com/google/uuid"
     "time"
+    "database/sql/driver"
+    "encoding/json"
+    "fmt"
 )
 
 type Load struct {
@@ -31,3 +34,31 @@ type Load struct {
 
 // JSON is a wrapper for handling JSON fields
 type JSON map[string]interface{}
+
+func (j JSON) Value() (driver.Value, error) {
+    if j == nil {
+        return nil, nil
+    }
+    return json.Marshal(j)
+}
+
+func (j *JSON) Scan(value interface{}) error {
+    if value == nil {
+        *j = nil
+        return nil
+    }
+
+    bytes, ok := value.([]byte)
+    if !ok {
+        return fmt.Errorf("failed to unmarshal JSONB value: %v", value)
+    }
+
+    var result map[string]interface{}
+    err := json.Unmarshal(bytes, &result)
+    if err != nil {
+        return err
+    }
+
+    *j = JSON(result)
+    return nil
+}

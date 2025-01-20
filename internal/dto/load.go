@@ -4,7 +4,7 @@ package dto
 type CreateLoadRequest struct {
     ExternalTMSLoadID string                 `json:"externalTMSLoadID"`
     FreightLoadID     string                 `json:"freightLoadID"`
-    Status           StatusDTO              `json:"status"`  // Changed from string to StatusDTO
+    Status           StatusDTO              `json:"status"`
     Customer         map[string]interface{} `json:"customer"`
     BillTo          map[string]interface{} `json:"billTo"`
     Pickup          map[string]interface{} `json:"pickup"`

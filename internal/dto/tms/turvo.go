@@ -26,15 +26,13 @@ type DateInfo struct {
     TimeZone string    `json:"timeZone"`
 }
 
-type Status struct {
-    Code        StatusCode `json:"code"`
-    Notes       string     `json:"notes"`
-    Description string     `json:"description"`
-}
-
 type StatusCode struct {
     Key   string `json:"key"`
     Value string `json:"value"`
+}
+
+type Status struct {
+    Code StatusCode `json:"code"`
 }
 
 type Lane struct {
@@ -42,57 +40,23 @@ type Lane struct {
     End   string `json:"end"`
 }
 
-type CodeValue struct {
-    Key   string `json:"key"`
-    Value string `json:"value"`
-}
-
-type Equipment struct {
-    Operation int       `json:"_operation"`
-    Type      CodeValue `json:"type"`
-    Size      CodeValue `json:"size"`
-}
-
-type ModeInfo struct {
-    Operation             int       `json:"_operation"`
-    SourceSegmentSequence string    `json:"sourceSegmentSequence"`
-    Mode                 CodeValue `json:"mode"`
-    ServiceType          CodeValue `json:"serviceType"`
-}
-
 type CustomerInfo struct {
-    ID   string `json:"id"`
     Name string `json:"name"`
 }
 
 type CustomerOrder struct {
-    CustomerOrderSourceId string       `json:"customerOrderSourceId"`
+    CustomerOrderSourceId string      `json:"customerOrderSourceId"`
     Customer             CustomerInfo `json:"customer"`
 }
 
-type CarrierInfo struct {
-    ID   string `json:"id"`
-    Name string `json:"name"`
-}
-
-type CarrierOrder struct {
-    CarrierOrderSourceId string      `json:"carrierOrderSourceId"`
-    Carrier             CarrierInfo `json:"carrier"`
-}
-
+// Minimal TMS shipment request with only required fields
 type CreateShipmentRequest struct {
-    LTLShipment             bool           `json:"ltlShipment"`
-    StartDate               DateInfo       `json:"startDate"`
-    EndDate                 DateInfo       `json:"endDate"`
-    Status                  Status         `json:"status"`
-    Equipment               []Equipment    `json:"equipment"`
-    Lane                    Lane           `json:"lane"`
-    GlobalRoute             []interface{}  `json:"globalRoute"`
-    SkipDistanceCalculation bool           `json:"skipDistanceCalculation"`
-    ModeInfo                []ModeInfo     `json:"modeInfo"`
-    CustomerOrder           []CustomerOrder `json:"customerOrder"`
-    CarrierOrder           []CarrierOrder  `json:"carrierOrder"`
-    UseRoutingGuide        bool            `json:"use_routing_guide"`
+    LTLShipment   bool            `json:"ltlShipment"`
+    StartDate     DateInfo        `json:"startDate"`
+    EndDate       DateInfo        `json:"endDate"`
+    Status        Status          `json:"status"`
+    Lane          Lane           `json:"lane"`
+    CustomerOrder []CustomerOrder `json:"customerOrder"`
 }
 
 type ShipmentResponse struct {
